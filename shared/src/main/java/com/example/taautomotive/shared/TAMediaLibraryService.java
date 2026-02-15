@@ -44,7 +44,7 @@ public final class TAMediaLibraryService extends MediaLibraryService {
                             MediaLibraryService.MediaLibrarySession session,
                             MediaSession.ControllerInfo browser,
                             @Nullable LibraryParams params) {
-                        MediaItem rootItem = buildFolderItem(ROOT_SEGMENT, ROOT_DISPLAY_TITLE);
+                        MediaItem rootItem = resolveMediaItem("");
                         return Futures.immediateFuture(LibraryResult.ofItem(rootItem, params));
                     }
 
@@ -110,33 +110,26 @@ public final class TAMediaLibraryService extends MediaLibraryService {
     }
 
     /**
-     * Resolves a mediaId to a MediaItem: first as a folder in the trie, then as a playable
-     * item under any DefaultFolder's loadChildren.
+     * Resolves a mediaId to a MediaItem only if it exists in the trie: either as a folder node
+     * or as a playable item returned by some node's loadChildren().
      */
     @Nullable
     private MediaItem resolveMediaItem(String mediaId) {
         if (mediaId == null || mediaId.isEmpty()) {
             return null;
         }
-        // Root folder
+        // Root folder (trie root node)
         if (ROOT_SEGMENT.equals(mediaId)) {
             return buildFolderItem(ROOT_SEGMENT, ROOT_DISPLAY_TITLE);
         }
-        // Any other folder in the trie
+        // Any other folder node in the trie
         MediaFolderNode node = folderTrie.getNode(mediaId);
         if (node != null) {
             String title = folderDisplayTitle(node.getSegment());
             return buildFolderItem(node.getSegment(), title);
         }
-        // Playable item: search in each default folder's children
-        for (DefaultFolder folder : DefaultFolder.values()) {
-            for (MediaItem item : folder.loadChildren()) {
-                if (mediaId.equals(item.mediaId)) {
-                    return item;
-                }
-            }
-        }
-        return null;
+        // Playable item: only if it appears in some trie node's loadChildren()
+        return folderTrie.findMediaItemById(mediaId);
     }
 
     private static MediaItem buildFolderItem(String mediaId, String title) {

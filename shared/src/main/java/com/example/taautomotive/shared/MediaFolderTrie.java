@@ -91,4 +91,32 @@ public final class MediaFolderTrie {
         MediaFolderNode node = getNode(path);
         return node != null ? node.loadChildren() : Collections.emptyList();
     }
+
+    /**
+     * Returns the MediaItem with the given mediaId if it appears in any node's loadChildren()
+     * (i.e. it is reachable from the trie), or null otherwise.
+     */
+    @Nullable
+    public MediaItem findMediaItemById(String mediaId) {
+        if (mediaId == null || mediaId.isEmpty()) {
+            return null;
+        }
+        return findMediaItemByIdRecursive(root, mediaId);
+    }
+
+    @Nullable
+    private static MediaItem findMediaItemByIdRecursive(MediaFolderNode node, String mediaId) {
+        for (MediaItem item : node.loadChildren()) {
+            if (mediaId.equals(item.mediaId)) {
+                return item;
+            }
+        }
+        for (MediaFolderNode child : node.getChildren().values()) {
+            MediaItem found = findMediaItemByIdRecursive(child, mediaId);
+            if (found != null) {
+                return found;
+            }
+        }
+        return null;
+    }
 }
