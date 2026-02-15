@@ -35,6 +35,7 @@ public final class TAMediaLibraryService extends MediaLibraryService {
 
         MediaLibraryService.MediaLibrarySession.Callback callback =
                 new MediaLibraryService.MediaLibrarySession.Callback() {
+
                     @Override
                     public ListenableFuture<LibraryResult<MediaItem>> onGetLibraryRoot(
                             MediaLibraryService.MediaLibrarySession session,
@@ -82,6 +83,19 @@ public final class TAMediaLibraryService extends MediaLibraryService {
                                 ImmutableList.copyOf(all.subList(fromIndex, toIndex));
                         return Futures.immediateFuture(
                                 LibraryResult.ofItemList(pageItems, params));
+                    }
+
+                    @Override
+                    public ListenableFuture<List<MediaItem>> onAddMediaItems(MediaSession mediaSession, MediaSession.ControllerInfo controller, List<MediaItem> mediaItems) {
+                        // Resolve each media item to ensure it exists in our library
+                        ImmutableList.Builder<MediaItem> resolvedItems = ImmutableList.builder();
+                        for (MediaItem item : mediaItems) {
+                            MediaItem resolved = resolveMediaItem(item.mediaId);
+                            if (resolved != null) {
+                                resolvedItems.add(resolved);
+                            }
+                        }
+                        return Futures.immediateFuture(resolvedItems.build());
                     }
                 };
 
