@@ -115,14 +115,6 @@ public final class TAMediaLibraryService extends MediaLibraryService {
      */
     @Nullable
     private MediaItem resolveMediaItem(String mediaId) {
-        if (mediaId == null || mediaId.isEmpty()) {
-            return null;
-        }
-        // Root folder (trie root node)
-        if (ROOT_SEGMENT.equals(mediaId)) {
-            return buildFolderItem(ROOT_SEGMENT, ROOT_DISPLAY_TITLE);
-        }
-        // Any other folder node in the trie
         MediaFolderNode node = folderTrie.getNode(mediaId);
         if (node != null) {
             String title = folderDisplayTitle(node.getSegment());

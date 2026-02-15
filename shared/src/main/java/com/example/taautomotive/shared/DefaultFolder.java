@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 public enum DefaultFolder {
 
     ROOT(
-            "root",
+            "",
             () -> {
                 // Children of root are the other default folders as browsable items
                 List<MediaItem> items = new ArrayList<>();

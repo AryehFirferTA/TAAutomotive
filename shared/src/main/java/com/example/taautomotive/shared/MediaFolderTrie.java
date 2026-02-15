@@ -26,9 +26,6 @@ public final class MediaFolderTrie {
     /** Populates the trie with one node per {@link DefaultFolder} as direct children of root. */
     private void populateFromDefaultFolders() {
         for (DefaultFolder folder : DefaultFolder.values()) {
-            if (folder == DefaultFolder.ROOT) {
-                continue;
-            }
             root.putChild(
                     folder.getRoute(),
                     new MediaFolderNode(folder.getRoute(), folder.getLoadChildren()));
