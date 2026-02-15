@@ -13,20 +13,21 @@ import androidx.media3.session.SessionError;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * MediaLibraryService that exposes a browsable media library and playback for Android Automotive.
- * The user can select and play audio from the library via the system media UI.
+ * The library structure is driven by {@link MediaFolderTrie} and {@link DefaultFolder}; the user
+ * can select and play audio from the library via the system media UI.
  */
 @UnstableApi
 public final class TAMediaLibraryService extends MediaLibraryService {
 
-    private static final String ROOT_ID = "root";
-    private static final String MUSIC_ID = "music";
+    private static final String ROOT_SEGMENT = "root";
+    private static final String ROOT_DISPLAY_TITLE = "TAAutomotive";
 
     private ExoPlayer player;
+    private MediaFolderTrie folderTrie;
     private MediaLibraryService.MediaLibrarySession librarySession;
 
     @Override
@@ -34,111 +35,64 @@ public final class TAMediaLibraryService extends MediaLibraryService {
         super.onCreate();
         player = new ExoPlayer.Builder(this).build();
         player.setRepeatMode(Player.REPEAT_MODE_OFF);
+        folderTrie = new MediaFolderTrie();
 
-        MediaLibraryService.MediaLibrarySession.Callback callback = new MediaLibraryService.MediaLibrarySession.Callback() {
-            @Override
-            public ListenableFuture<LibraryResult<MediaItem>> onGetLibraryRoot(
-                    MediaLibraryService.MediaLibrarySession session,
-                    MediaSession.ControllerInfo browser,
-                    @Nullable LibraryParams params) {
-                MediaItem rootItem =
-                        new MediaItem.Builder()
-                                .setMediaId(ROOT_ID)
-                                .setMediaMetadata(
-                                        new MediaMetadata.Builder()
-                                                .setIsBrowsable(true)
-                                                .setIsPlayable(false)
-                                                .setTitle("TAAutomotive")
-                                                .build())
-                                .build();
-                return Futures.immediateFuture(LibraryResult.ofItem(rootItem, params));
-            }
-
-            @Override
-            public ListenableFuture<LibraryResult<MediaItem>> onGetItem(
-                    MediaLibraryService.MediaLibrarySession session,
-                    MediaSession.ControllerInfo browser,
-                    String mediaId) {
-                if (ROOT_ID.equals(mediaId)) {
-                    MediaItem item =
-                            new MediaItem.Builder()
-                                    .setMediaId(ROOT_ID)
-                                    .setMediaMetadata(
-                                            new MediaMetadata.Builder()
-                                                    .setIsBrowsable(true)
-                                                    .setIsPlayable(false)
-                                                    .setTitle("TAAutomotive")
-                                                    .build())
-                                    .build();
-                    return Futures.immediateFuture(LibraryResult.ofItem(item, null));
-                }
-                if (MUSIC_ID.equals(mediaId)) {
-                    MediaItem item =
-                            new MediaItem.Builder()
-                                    .setMediaId(MUSIC_ID)
-                                    .setMediaMetadata(
-                                            new MediaMetadata.Builder()
-                                                    .setIsBrowsable(true)
-                                                    .setIsPlayable(false)
-                                                    .setTitle("Music")
-                                                    .build())
-                                    .build();
-                    return Futures.immediateFuture(LibraryResult.ofItem(item, null));
-                }
-                // Playable track
-                MediaItem track = buildTrackItem(mediaId);
-                if (track != null) {
-                    return Futures.immediateFuture(LibraryResult.ofItem(track, null));
-                }
-                return Futures.immediateFuture(LibraryResult.ofError(SessionError.ERROR_BAD_VALUE));
-            }
-
-            @Override
-            public ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> onGetChildren(
-                    MediaLibraryService.MediaLibrarySession session,
-                    MediaSession.ControllerInfo browser,
-                    String parentId,
-                    int page,
-                    int pageSize,
-                    @Nullable LibraryParams params) {
-                if (ROOT_ID.equals(parentId)) {
-                    MediaItem musicFolder =
-                            new MediaItem.Builder()
-                                    .setMediaId(MUSIC_ID)
-                                    .setMediaMetadata(
-                                            new MediaMetadata.Builder()
-                                                    .setIsBrowsable(true)
-                                                    .setIsPlayable(false)
-                                                    .setTitle("Music")
-                                                    .build())
-                                    .build();
-                    return Futures.immediateFuture(
-                            LibraryResult.ofItemList(ImmutableList.of(musicFolder), params));
-                }
-                if (MUSIC_ID.equals(parentId)) {
-                    List<MediaItem> tracks = getPlayableTracks();
-                    int fromIndex = page * pageSize;
-                    int toIndex = Math.min(fromIndex + pageSize, tracks.size());
-                    if (fromIndex >= tracks.size()) {
-                        return Futures.immediateFuture(
-                                LibraryResult.ofItemList(ImmutableList.of(), params));
+        MediaLibraryService.MediaLibrarySession.Callback callback =
+                new MediaLibraryService.MediaLibrarySession.Callback() {
+                    @Override
+                    public ListenableFuture<LibraryResult<MediaItem>> onGetLibraryRoot(
+                            MediaLibraryService.MediaLibrarySession session,
+                            MediaSession.ControllerInfo browser,
+                            @Nullable LibraryParams params) {
+                        MediaItem rootItem = buildFolderItem(ROOT_SEGMENT, ROOT_DISPLAY_TITLE);
+                        return Futures.immediateFuture(LibraryResult.ofItem(rootItem, params));
                     }
-                    ImmutableList<MediaItem> pageItems =
-                            ImmutableList.copyOf(tracks.subList(fromIndex, toIndex));
-                    return Futures.immediateFuture(LibraryResult.ofItemList(pageItems, params));
-                }
-                return Futures.immediateFuture(LibraryResult.ofItemList(ImmutableList.of(), params));
-            }
-        };
+
+                    @Override
+                    public ListenableFuture<LibraryResult<MediaItem>> onGetItem(
+                            MediaLibraryService.MediaLibrarySession session,
+                            MediaSession.ControllerInfo browser,
+                            String mediaId) {
+                        MediaItem item = resolveMediaItem(mediaId);
+                        if (item != null) {
+                            return Futures.immediateFuture(LibraryResult.ofItem(item, null));
+                        }
+                        return Futures.immediateFuture(
+                                LibraryResult.ofError(SessionError.ERROR_BAD_VALUE));
+                    }
+
+                    @Override
+                    public ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> onGetChildren(
+                            MediaLibraryService.MediaLibrarySession session,
+                            MediaSession.ControllerInfo browser,
+                            String parentId,
+                            int page,
+                            int pageSize,
+                            @Nullable LibraryParams params) {
+                        List<MediaItem> all = folderTrie.loadChildrenForPath(parentId);
+                        int fromIndex = page * pageSize;
+                        int toIndex = Math.min(fromIndex + pageSize, all.size());
+                        if (fromIndex >= all.size()) {
+                            return Futures.immediateFuture(
+                                    LibraryResult.ofItemList(ImmutableList.of(), params));
+                        }
+                        ImmutableList<MediaItem> pageItems =
+                                ImmutableList.copyOf(all.subList(fromIndex, toIndex));
+                        return Futures.immediateFuture(
+                                LibraryResult.ofItemList(pageItems, params));
+                    }
+                };
 
         librarySession =
-                new MediaLibraryService.MediaLibrarySession.Builder(TAMediaLibraryService.this, player, callback)
+                new MediaLibraryService.MediaLibrarySession.Builder(
+                                TAMediaLibraryService.this, player, callback)
                         .build();
     }
 
     @Override
     @Nullable
-    public MediaLibraryService.MediaLibrarySession onGetSession(MediaSession.ControllerInfo controllerInfo) {
+    public MediaLibraryService.MediaLibrarySession onGetSession(
+            MediaSession.ControllerInfo controllerInfo) {
         return librarySession;
     }
 
@@ -155,48 +109,55 @@ public final class TAMediaLibraryService extends MediaLibraryService {
         super.onDestroy();
     }
 
-    private static List<MediaItem> getPlayableTracks() {
-        List<MediaItem> items = new ArrayList<>();
-        items.add(
-                buildTrackItem(
-                        "track_1",
-                        "https://storage.googleapis.com/exoplayer-test-media-1/mp3/android_spot_15sec.mp3",
-                        "Android Spot (15 sec)"));
-        items.add(
-                buildTrackItem(
-                        "track_2",
-                        "https://storage.googleapis.com/exoplayer-test-media-1/mp3/ice_cream_15sec.mp3",
-                        "Ice Cream (15 sec)"));
-        return items;
+    /**
+     * Resolves a mediaId to a MediaItem: first as a folder in the trie, then as a playable
+     * item under any DefaultFolder's loadChildren.
+     */
+    @Nullable
+    private MediaItem resolveMediaItem(String mediaId) {
+        if (mediaId == null || mediaId.isEmpty()) {
+            return null;
+        }
+        // Root folder
+        if (ROOT_SEGMENT.equals(mediaId)) {
+            return buildFolderItem(ROOT_SEGMENT, ROOT_DISPLAY_TITLE);
+        }
+        // Any other folder in the trie
+        MediaFolderNode node = folderTrie.getNode(mediaId);
+        if (node != null) {
+            String title = folderDisplayTitle(node.getSegment());
+            return buildFolderItem(node.getSegment(), title);
+        }
+        // Playable item: search in each default folder's children
+        for (DefaultFolder folder : DefaultFolder.values()) {
+            for (MediaItem item : folder.loadChildren()) {
+                if (mediaId.equals(item.mediaId)) {
+                    return item;
+                }
+            }
+        }
+        return null;
     }
 
-    private static MediaItem buildTrackItem(String mediaId, String uri, String title) {
+    private static MediaItem buildFolderItem(String mediaId, String title) {
         return new MediaItem.Builder()
                 .setMediaId(mediaId)
-                .setUri(uri)
                 .setMediaMetadata(
                         new MediaMetadata.Builder()
-                                .setIsBrowsable(false)
-                                .setIsPlayable(true)
+                                .setIsBrowsable(true)
+                                .setIsPlayable(false)
                                 .setTitle(title)
                                 .build())
                 .build();
     }
 
-    @Nullable
-    private static MediaItem buildTrackItem(String mediaId) {
-        if ("track_1".equals(mediaId)) {
-            return buildTrackItem(
-                    mediaId,
-                    "https://storage.googleapis.com/exoplayer-test-media-1/mp3/android_spot_15sec.mp3",
-                    "Android Spot (15 sec)");
+    private static String folderDisplayTitle(String segment) {
+        if (ROOT_SEGMENT.equals(segment)) {
+            return ROOT_DISPLAY_TITLE;
         }
-        if ("track_2".equals(mediaId)) {
-            return buildTrackItem(
-                    mediaId,
-                    "https://storage.googleapis.com/exoplayer-test-media-1/mp3/ice_cream_15sec.mp3",
-                    "Ice Cream (15 sec)");
+        if (segment == null || segment.isEmpty()) {
+            return segment;
         }
-        return null;
+        return segment.substring(0, 1).toUpperCase() + segment.substring(1);
     }
 }
