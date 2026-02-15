@@ -10,23 +10,30 @@ import java.util.function.Supplier;
 
 /**
  * A node in the media folder trie. Acts as a folder in the MediaItem tree: each node has a
- * path segment, an optional function that returns the list of MediaItems when this folder is
- * opened (loadChildren), and child nodes for sub-folders.
+ * path segment, the MediaItem it represents, a function that returns the list of MediaItems
+ * when this folder is opened (loadChildren), and child nodes for sub-folders.
  */
 public final class MediaFolderNode {
 
     private final String segment;
+    private final MediaItem mediaItem;
     private final Supplier<List<MediaItem>> loadChildren;
     private final Map<String, MediaFolderNode> children;
 
-    public MediaFolderNode(String segment, Supplier<List<MediaItem>> loadChildren) {
+    public MediaFolderNode(String segment, MediaItem mediaItem, Supplier<List<MediaItem>> loadChildren) {
         this.segment = segment;
+        this.mediaItem = mediaItem;
         this.loadChildren = loadChildren != null ? loadChildren : () -> Collections.emptyList();
         this.children = new LinkedHashMap<>();
     }
 
     public String getSegment() {
         return segment;
+    }
+
+    /** Returns the MediaItem this node represents (e.g. the folder item shown in the library). */
+    public MediaItem getMediaItem() {
+        return mediaItem;
     }
 
     /**
@@ -64,10 +71,10 @@ public final class MediaFolderNode {
      * Gets the child for the given segment, or creates and adds one with the given
      * loadChildren supplier if absent.
      */
-    public MediaFolderNode getOrCreateChild(String segment, Supplier<List<MediaItem>> loadChildren) {
+    public MediaFolderNode getOrCreateChild(String segment, MediaItem childMediaItem, Supplier<List<MediaItem>> loadChildren) {
         MediaFolderNode child = children.get(segment);
         if (child == null) {
-            child = new MediaFolderNode(segment, loadChildren);
+            child = new MediaFolderNode(segment, childMediaItem, loadChildren);
             children.put(segment, child);
         }
         return child;

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.Arrays;
 
 /**
  * Trie that acts as a folder system for MediaItems. The root and its children are populated
@@ -19,16 +20,23 @@ public final class MediaFolderTrie {
     private final MediaFolderNode root;
 
     public MediaFolderTrie() {
-        this.root = new MediaFolderNode(DefaultFolder.ROOT.getRoute(), DefaultFolder.ROOT.getLoadChildren());
+        this.root = new MediaFolderNode(
+                DefaultFolder.ROOT.getRoute(),
+                DefaultFolder.ROOT.getFolderItem(),
+                DefaultFolder.ROOT.getLoadChildren());
         populateFromDefaultFolders();
     }
 
     /** Populates the trie with one node per {@link DefaultFolder} as direct children of root. */
     private void populateFromDefaultFolders() {
         for (DefaultFolder folder : DefaultFolder.values()) {
+            if (folder.getRoute().isEmpty() || "root".equals(folder.getRoute())) continue;
             root.putChild(
                     folder.getRoute(),
-                    new MediaFolderNode(folder.getRoute(), folder.getLoadChildren()));
+                    new MediaFolderNode(
+                            folder.getRoute(),
+                            folder.getFolderItem(),
+                            folder.getLoadChildren()));
         }
     }
 
@@ -38,7 +46,8 @@ public final class MediaFolderTrie {
 
     /**
      * Returns the node at the given path, or null if not found. Path uses "/" as separator
-     * (e.g. "root", "root/music", "music").
+     * (e.g. "root", "root/music", "music"). The path "root" maps to the trie root node so
+     * that when a folder MediaItem is selected, its children are loaded from the trie.
      */
     @Nullable
     public MediaFolderNode getNode(String path) {
@@ -49,29 +58,13 @@ public final class MediaFolderTrie {
         if (normalized.isEmpty()) {
             return root;
         }
+        if ("root".equals(normalized)) {
+            return root;
+        }
         String[] segments = normalized.split(PATH_SEPARATOR);
         MediaFolderNode current = root;
         for (String segment : segments) {
             if (segment.isEmpty()) continue;
-            current = current.getChild(segment);
-            if (current == null) {
-                return null;
-            }
-        }
-        return current;
-    }
-
-    /**
-     * Returns the node at the given path segments (e.g. ["root", "music"]).
-     */
-    @Nullable
-    public MediaFolderNode getNode(List<String> pathSegments) {
-        if (pathSegments == null || pathSegments.isEmpty()) {
-            return root;
-        }
-        MediaFolderNode current = root;
-        for (String segment : pathSegments) {
-            if (segment == null || segment.isEmpty()) continue;
             current = current.getChild(segment);
             if (current == null) {
                 return null;

@@ -16,20 +16,11 @@ public enum DefaultFolder {
     ROOT(
             "",
             () -> {
-                // Children of root are the other default folders as browsable items
+                // Children of root are the other default folders (their folder MediaItems)
                 List<MediaItem> items = new ArrayList<>();
                 for (DefaultFolder folder : DefaultFolder.values()) {
-                    if ("root".equals(folder.getRoute())) continue;
-                    items.add(
-                            new MediaItem.Builder()
-                                    .setMediaId(folder.getRoute())
-                                    .setMediaMetadata(
-                                            new MediaMetadata.Builder()
-                                                    .setIsBrowsable(true)
-                                                    .setIsPlayable(false)
-                                                    .setTitle(folder.getDisplayTitle())
-                                                    .build())
-                                    .build());
+                    if (folder.getRoute().isEmpty() || "root".equals(folder.getRoute())) continue;
+                    items.add(folder.getFolderItem());
                 }
                 return items;
             }),
@@ -75,7 +66,25 @@ public enum DefaultFolder {
         return loadChildren.get();
     }
 
+    /** Returns the MediaItem that represents this folder in the library (browsable, not playable). */
+    public MediaItem getFolderItem() {
+        String mediaId = route.isEmpty() ? "root" : route;
+        String title = getDisplayTitle();
+        return new MediaItem.Builder()
+                .setMediaId(mediaId)
+                .setMediaMetadata(
+                        new MediaMetadata.Builder()
+                                .setIsBrowsable(true)
+                                .setIsPlayable(false)
+                                .setTitle(title)
+                                .build())
+                .build();
+    }
+
     private String getDisplayTitle() {
+        if (route == null || route.isEmpty()) {
+            return "TAAutomotive";
+        }
         return route.substring(0, 1).toUpperCase() + route.substring(1);
     }
 

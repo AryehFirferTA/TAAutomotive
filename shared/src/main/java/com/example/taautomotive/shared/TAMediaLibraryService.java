@@ -2,7 +2,6 @@ package com.example.taautomotive.shared;
 
 import androidx.annotation.Nullable;
 import androidx.media3.common.MediaItem;
-import androidx.media3.common.MediaMetadata;
 import androidx.media3.common.Player;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.ExoPlayer;
@@ -23,9 +22,6 @@ import java.util.List;
 @UnstableApi
 public final class TAMediaLibraryService extends MediaLibraryService {
 
-    private static final String ROOT_SEGMENT = "root";
-    private static final String ROOT_DISPLAY_TITLE = "TAAutomotive";
-
     private ExoPlayer player;
     private MediaFolderTrie folderTrie;
     private MediaLibraryService.MediaLibrarySession librarySession;
@@ -44,7 +40,7 @@ public final class TAMediaLibraryService extends MediaLibraryService {
                             MediaLibraryService.MediaLibrarySession session,
                             MediaSession.ControllerInfo browser,
                             @Nullable LibraryParams params) {
-                        MediaItem rootItem = resolveMediaItem("");
+                        MediaItem rootItem = folderTrie.getRoot().getMediaItem();
                         return Futures.immediateFuture(LibraryResult.ofItem(rootItem, params));
                     }
 
@@ -69,7 +65,13 @@ public final class TAMediaLibraryService extends MediaLibraryService {
                             int page,
                             int pageSize,
                             @Nullable LibraryParams params) {
-                        List<MediaItem> all = folderTrie.loadChildrenForPath(parentId);
+                        // Load children from the trie for the selected folder node
+                        MediaFolderNode node = folderTrie.getNode(parentId);
+                        if (node == null) {
+                            return Futures.immediateFuture(
+                                    LibraryResult.ofItemList(ImmutableList.of(), params));
+                        }
+                        List<MediaItem> all = node.loadChildren();
                         int fromIndex = page * pageSize;
                         int toIndex = Math.min(fromIndex + pageSize, all.size());
                         if (fromIndex >= all.size()) {
@@ -111,38 +113,17 @@ public final class TAMediaLibraryService extends MediaLibraryService {
 
     /**
      * Resolves a mediaId to a MediaItem only if it exists in the trie: either as a folder node
-     * or as a playable item returned by some node's loadChildren().
+     * (returns that node's MediaItem) or as a playable item returned by some node's loadChildren().
      */
     @Nullable
     private MediaItem resolveMediaItem(String mediaId) {
+        if (mediaId == null || mediaId.isEmpty()) {
+            return folderTrie.getRoot().getMediaItem();
+        }
         MediaFolderNode node = folderTrie.getNode(mediaId);
         if (node != null) {
-            String title = folderDisplayTitle(node.getSegment());
-            return buildFolderItem(node.getSegment(), title);
+            return node.getMediaItem();
         }
-        // Playable item: only if it appears in some trie node's loadChildren()
         return folderTrie.findMediaItemById(mediaId);
-    }
-
-    private static MediaItem buildFolderItem(String mediaId, String title) {
-        return new MediaItem.Builder()
-                .setMediaId(mediaId)
-                .setMediaMetadata(
-                        new MediaMetadata.Builder()
-                                .setIsBrowsable(true)
-                                .setIsPlayable(false)
-                                .setTitle(title)
-                                .build())
-                .build();
-    }
-
-    private static String folderDisplayTitle(String segment) {
-        if (ROOT_SEGMENT.equals(segment)) {
-            return ROOT_DISPLAY_TITLE;
-        }
-        if (segment == null || segment.isEmpty()) {
-            return segment;
-        }
-        return segment.substring(0, 1).toUpperCase() + segment.substring(1);
     }
 }
