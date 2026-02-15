@@ -1,0 +1,54 @@
+-- Merging decision tree log ---
+manifest
+ADDED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:1:1-28:12
+INJECTED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:1:1-28:12
+	package
+		INJECTED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml
+	xmlns:android
+		ADDED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:1:11-69
+uses-permission#android.permission.FOREGROUND_SERVICE
+ADDED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:3:5-77
+	android:name
+		ADDED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:3:22-74
+uses-permission#android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK
+ADDED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:4:5-92
+	android:name
+		ADDED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:4:22-89
+application
+ADDED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:6:5-26:19
+	android:appCategory
+		ADDED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:6:18-45
+meta-data#com.google.android.gms.car.application
+ADDED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:8:9-10:59
+	android:resource
+		ADDED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:10:13-56
+	android:name
+		ADDED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:9:13-66
+service#com.example.taautomotive.shared.TAMediaLibraryService
+ADDED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:14:9-24:19
+	android:exported
+		ADDED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:16:13-36
+	android:foregroundServiceType
+		ADDED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:17:13-58
+	android:name
+		ADDED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:15:13-81
+intent-filter#action:name:androidx.media3.session.MediaLibraryService
+ADDED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:18:13-20:29
+action#androidx.media3.session.MediaLibraryService
+ADDED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:19:17-86
+	android:name
+		ADDED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:19:25-83
+intent-filter#action:name:android.media.browse.MediaBrowserService
+ADDED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:21:13-23:29
+action#android.media.browse.MediaBrowserService
+ADDED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:22:17-83
+	android:name
+		ADDED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:22:25-80
+uses-sdk
+INJECTED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml
+INJECTED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml

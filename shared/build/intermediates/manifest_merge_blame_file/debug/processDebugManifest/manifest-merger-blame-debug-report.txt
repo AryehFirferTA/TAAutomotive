@@ -1,0 +1,51 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.example.taautomotive.shared" >
+4
+5    <uses-sdk android:minSdkVersion="28" />
+6
+7    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+7-->C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:3:5-77
+7-->C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:3:22-74
+8    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+8-->C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:4:5-92
+8-->C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:4:22-89
+9
+10    <application android:appCategory="audio" >
+10-->C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:6:5-26:19
+10-->C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:6:18-45
+11        <meta-data
+11-->C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:8:9-10:59
+12            android:name="com.google.android.gms.car.application"
+12-->C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:9:13-66
+13            android:resource="@xml/automotive_app_desc" />
+13-->C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:10:13-56
+14
+15        <!--
+16         MediaLibraryService: media browsing and playback for Android Automotive.
+17         Supports both Media3 MediaBrowser and legacy MediaBrowserCompat.
+18        -->
+19        <service
+19-->C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:14:9-24:19
+20            android:name="com.example.taautomotive.shared.TAMediaLibraryService"
+20-->C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:15:13-81
+21            android:exported="true"
+21-->C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:16:13-36
+22            android:foregroundServiceType="mediaPlayback" >
+22-->C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:17:13-58
+23            <intent-filter>
+23-->C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:18:13-20:29
+24                <action android:name="androidx.media3.session.MediaLibraryService" />
+24-->C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:19:17-86
+24-->C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:19:25-83
+25            </intent-filter>
+26            <intent-filter>
+26-->C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:21:13-23:29
+27                <action android:name="android.media.browse.MediaBrowserService" />
+27-->C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:22:17-83
+27-->C:\Users\asfir\AndroidStudioProjects\TAAutomotive\shared\src\main\AndroidManifest.xml:22:25-80
+28            </intent-filter>
+29        </service>
+30    </application>
+31
+32</manifest>

@@ -1,0 +1,20 @@
+plugins {
+    id 'com.android.library'
+}
+android {
+    namespace 'com.example.taautomotive.shared'
+    compileSdkVersion 35
+
+    defaultConfig {
+        minSdkVersion 28
+        targetSdkVersion 35
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+}
+dependencies {
+    implementation libs.media
+    implementation libs.media3.session
+    implementation libs.media3.exoplayer
+    implementation libs.media3.common
+}
