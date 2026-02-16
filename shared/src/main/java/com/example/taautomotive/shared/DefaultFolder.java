@@ -32,13 +32,13 @@ public enum DefaultFolder {
                 items.add(
                         buildTrack(
                                 "track_1",
-                                "https://storage.googleapis.com/exoplayer-test-media-1/mp3/android_spot_15sec.mp3",
-                                "Android Spot (15 sec)"));
+                                "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+                                "SoundHelix Song 1"));
                 items.add(
                         buildTrack(
                                 "track_2",
-                                "https://storage.googleapis.com/exoplayer-test-media-1/mp3/ice_cream_15sec.mp3",
-                                "Ice Cream (15 sec)"));
+                                "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+                                "SoundHelix Song 2"));
                 return items;
             }),
 
